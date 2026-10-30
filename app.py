@@ -21,20 +21,20 @@ from procesar_articulos import (
 )
 
 # --- 1. CONFIGURACIÓN DE PÁGINA DE STREAMLIT ---
-st.set_page_config(page_title="Seguimiento preparación - 501", layout="wide", page_icon="🏭")
+st.set_page_config(page_title="Seguimiento preparación - 503", layout="wide", page_icon="🏭")
 
 # --- 2. SISTEMA DE SEGURIDAD Y LOGIN ---
 USUARIOS_PERMITIDOS = {
     "hzavaley": "supply2026",
     "gerencia": "gerencia123",
-    "supervisor": "super501"
+    "supervisor": "super503"
 }
 
 if "autenticado" not in st.session_state:
     st.session_state["autenticado"] = False
 
 if not st.session_state["autenticado"]:
-    st.title("🔒 Acceso Restringido - Almacén 501")
+    st.title("🔒 Acceso Restringido - Almacén 503")
     st.markdown("Por favor, ingresa tus credenciales para acceder al tablero operativo.")
     
     with st.form("login_form"):
@@ -88,7 +88,7 @@ if "Es_Picker" not in df.columns:
 # HOJA 1: RESUMEN EJECUTIVO
 # =========================================================
 if hoja_seleccionada == "1. Resumen Ejecutivo":
-    st.title(f"📊 Seguimiento preparación - 501 ({periodo_sel})")
+    st.title(f"📊 Seguimiento preparación - 503 ({periodo_sel})")
     df_mes = df[df["Fecha_dt"].dt.month == mes_sel].copy()
     fecha_ayer = datetime.date.today() - datetime.timedelta(days=1)
     df_cerrado_ef = df_mes[(df_mes["Tipo_Personal"] == "Efectivo") & (df_mes["Fecha_Solo_Fecha"] <= fecha_ayer)].copy()
