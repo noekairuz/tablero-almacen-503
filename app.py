@@ -140,7 +140,7 @@ if hoja_seleccionada == "1. Resumen Ejecutivo":
     with col_e2: 
         st.markdown(f'<div style="background-color: transparent;"><p style="font-size: 14px; margin-bottom: 0px; color: #31333F;">📋 Pérdida x Ausentismo (Efectivos)</p><p style="font-size: 26px; font-weight: bold; color: #EF4444; margin-top: 0px;">-{bultos_perd_ausentismo:,.0f} bultos</p></div>', unsafe_allow_html=True)
     with col_e3: 
-        st.markdown(f'<div style="background-color: transparent;"><p style="font-size: 14px; margin-bottom: 0px; color: #31333F;">⚙️ Pérdida x Horas AG</p><p style="font-size: 26px; font-weight: bold; color: #EF4444; margin-top: 0px;">-{bultos_perd_ag:,.0f} bultos</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="background-color: transparent;"><p style="font-size: 14px; margin-bottom: 0px; color: #31333F;">⚙️ Pérdida x Horas Improductivas</p><p style="font-size: 26px; font-weight: bold; color: #EF4444; margin-top: 0px;">-{bultos_perd_ag:,.0f} bultos</p></div>', unsafe_allow_html=True)
     with col_e4:
         color_prod = "#EF4444" if balance_neto_prod < 0 else "#10B981"
         signo_prod = "" if balance_neto_prod < 0 else "+"
