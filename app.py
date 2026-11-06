@@ -71,10 +71,39 @@ st.sidebar.header("📌 Navegación")
 hoja_seleccionada = st.sidebar.radio("Seleccionar Hoja:", ["1. Resumen Ejecutivo", "2. Presentismo Efectivos", "3. Horas Eventuales", "4. Pérdida por Horas Improductivas", "5. Improductividad y Compensación", "6. Productividad (BDIDPR)","7. Glosario"])
 st.sidebar.markdown("---")
 st.sidebar.header("📅 Período de Análisis")
-opciones_meses = {"Septiembre 2026": (2026, 9), "Octubre 2026": (2026, 10), "Noviembre 2026": (2026, 11), "Diciembre 2026": (2026, 12)}
-periodo_sel = st.sidebar.selectbox("Seleccionar Mes:", options=list(opciones_meses.keys()), index=1)
-anio_sel, mes_sel = opciones_meses[periodo_sel]
 
+opciones_meses = {
+    "Septiembre 2026": (2026, 9),
+    "Octubre 2026": (2026, 10),
+    "Noviembre 2026": (2026, 11),
+    "Diciembre 2026": (2026, 12)
+}
+
+lista_nombres_meses = list(opciones_meses.keys())
+
+# 1. Obtenemos el año y mes en curso desde el reloj del sistema
+hoy = datetime.date.today()
+tupla_actual = (hoy.year, hoy.month)
+
+# 2. Buscamos cuál de las opciones coincide con el mes actual; si no existe, toma la última
+indice_defecto = 0
+for idx, (nombre, tupla_am) in enumerate(opciones_meses.items()):
+    if tupla_am == tupla_actual:
+        indice_defecto = idx
+        break
+else:
+    # Si el mes actual no está en el diccionario, selecciona el último mes cargado
+    indice_defecto = len(lista_nombres_meses) - 1
+
+# 3. Selector dinámico con el índice en curso
+periodo_sel = st.sidebar.selectbox(
+    "Seleccionar Mes:",
+    options=lista_nombres_meses,
+    index=indice_defecto
+)
+
+# 4. Desempaquetamos el año y el mes seleccionado
+anio_sel, mes_sel = opciones_meses[periodo_sel]
 with st.spinner(f"Cargando datos de {periodo_sel}..."):
     df, df_presupuesto = obtener_datos(anio=anio_sel, mes=mes_sel)
 if df is None or len(df) == 0:
@@ -140,7 +169,7 @@ if hoja_seleccionada == "1. Resumen Ejecutivo":
     with col_e2: 
         st.markdown(f'<div style="background-color: transparent;"><p style="font-size: 14px; margin-bottom: 0px; color: #31333F;">📋 Pérdida x Ausentismo (Efectivos)</p><p style="font-size: 26px; font-weight: bold; color: #EF4444; margin-top: 0px;">-{bultos_perd_ausentismo:,.0f} bultos</p></div>', unsafe_allow_html=True)
     with col_e3: 
-        st.markdown(f'<div style="background-color: transparent;"><p style="font-size: 14px; margin-bottom: 0px; color: #31333F;">⚙️ Pérdida x Horas Improductivas</p><p style="font-size: 26px; font-weight: bold; color: #EF4444; margin-top: 0px;">-{bultos_perd_ag:,.0f} bultos</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="background-color: transparent;"><p style="font-size: 14px; margin-bottom: 0px; color: #31333F;">⚙️ Pérdida x Horas AG</p><p style="font-size: 26px; font-weight: bold; color: #EF4444; margin-top: 0px;">-{bultos_perd_ag:,.0f} bultos</p></div>', unsafe_allow_html=True)
     with col_e4:
         color_prod = "#EF4444" if balance_neto_prod < 0 else "#10B981"
         signo_prod = "" if balance_neto_prod < 0 else "+"
@@ -272,7 +301,11 @@ elif hoja_seleccionada == "2. Presentismo Efectivos":
     # 3. Consolidado del Mes
     total_jornadas_mes = ausentismo_total + jor_plan_fut + jor_noplan_fut
     total_dias_mes = dias_evaluados + dias_futuros
-    fte_total_mes = total_jornadas_mes / total_dias_mes if total_dias_mes > 0 else 0
+    col_f_sab = "Fecha_dt" if "Fecha_dt" in df_mes.columns else ("Fecha_Solo_Fecha" if "Fecha_Solo_Fecha" in df_mes.columns else "Fecha")
+    fechas_unicas_mes = pd.to_datetime(df_mes[col_f_sab].dropna().unique())
+    cant_sabados = sum(1 for f in fechas_unicas_mes if f.weekday() == 5)
+    jornadas_consideradas_mes = total_dias_mes - (cant_sabados / 2.0)
+    fte_total_mes = total_jornadas_mes / jornadas_consideradas_mes if jornadas_consideradas_mes > 0 else 0
 
     # Suma exclusiva de no planificados: Pasado No Planificado + Futuro No Planificado
     bultos_perdidos_noplan_base = locals().get('bultos_perdidos_noplan', bultos_perdidos_pasados)
@@ -2196,11 +2229,11 @@ elif hoja_seleccionada == "7. Glosario":
     st.markdown(
         """
         **1. Objetivos Base por Área (Jornada Completa):**
-        * **Área 11 y 12 (Seco)**: 1,200 bultos/día
-        * **Área 21 (Refrigerado)**: 1,275 bultos/día
-        * **Área 22 (Congelado)**: 660 bultos/día
-        * **Área 23 (Fruta y Verdura)**: 1,200 bultos/día
-        * **Área 95 (Baja Rotación / Especial)**: 900 bultos/día
+        * **Área 11 y 16 (Seco)**: 1,200 bultos/día
+        * **Área 21 (Refrigerado)**: 1,350 bultos/día
+        * **Área 22 (Congelado)**: 350 bultos/día
+        * **Área 23 (Fruta y Verdura)**: 850 bultos/día
+        * **Área 95 (Baja Rotación / Especial)**: 1200 bultos/día
         * **Personal Eventual**: Objetivo fijo de 1,000 bultos/día independientemente del área.
         
         **2. Horas de Conexión Exigibles:**

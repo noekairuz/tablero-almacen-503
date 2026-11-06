@@ -34,7 +34,10 @@ def buscar_archivo_csv(mes_nombre, tipo_personal):
 
 def cargar_base_presentismo(anio, mes):
     nombre_mes = NOMBRES_MESES.get(mes, "Septiembre")
-    cols_dias_posibles = [str(i) for i in range(1, 32)]
+    import calendar
+    # Obtiene la cantidad exacta de días reales del mes (30 para noviembre, 31 para octubre)
+    dias_en_mes = calendar.monthrange(anio, mes)[1]
+    cols_dias_posibles = [str(i) for i in range(1, dias_en_mes + 1)]
     dfs_unificados = []
     
     for tipo in ["efectivo", "eventual"]:
@@ -70,7 +73,7 @@ def cargar_base_presentismo(anio, mes):
                 df_melted["Legajo"] = df_melted["Legajo"].astype(str).str.strip().str.replace(r'\.0$', '', regex=True)
                 df_melted["Nombre_Apellido"] = df_melted["Nombre"].astype(str).str.strip()
                 df_melted["Turno"] = df_melted["Turno"].astype(str).str.strip()
-                df_melted["Almacen"] = "501 - Vicente López"
+                df_melted["Almacen"] = "503 - Burzaco"
                 df_melted["Fecha"] = f"{anio}-{mes:02d}-" + df_melted["Dia_Str"].astype(str).str.zfill(2)
                 df_melted["Situacion_Presentismo"] = df_melted["Situacion_Presentismo"].astype(str).str.strip().fillna("Sin Registro")
                 df_melted["Tipo_Personal"] = tipo_label
@@ -528,7 +531,7 @@ def obtener_datos_hoja6(mes_seleccionado=10):
             if tipo == "Eventual":
                 return 1000.0
             else:
-                targets_efectivos = {"11": 1200, "12": 1200, "21": 1275, "22": 660, "23": 1200, "95": 900}
+                targets_efectivos = {"11": 1200, "16": 1200, "21": 1350, "22": 350, "23": 850, "95": 1200}
                 return targets_efectivos.get(area, 1200.0)
 
         df_m4["Target_Full_Area"] = df_m4.apply(obtener_target_full_shift, axis=1)
@@ -760,7 +763,10 @@ def obtener_datos(anio, mes):
     
     df_completo = pd.concat(dfs_combinados, ignore_index=True)
     df_completo["Situacion_Presentismo_Limpia"] = df_completo["Situacion_Presentismo"].astype(str).str.strip()
-    df_completo["Fecha_dt"] = pd.to_datetime(df_completo["Fecha"])
+    df_completo["Fecha_dt"] = pd.to_datetime(df_completo["Fecha"], errors="coerce")
+    df_completo = df_completo.dropna(subset=["Fecha_dt"]).copy()
+
+    
     df_completo["Fecha_Corta"] = df_completo["Fecha_dt"].dt.strftime("%d/%m/%y")
     dias_espanol = {'Monday': 'Lunes', 'Tuesday': 'Martes', 'Wednesday': 'Miércoles', 'Thursday': 'Jueves', 'Friday': 'Viernes', 'Saturday': 'Sábado', 'Sunday': 'Domingo'}
     
